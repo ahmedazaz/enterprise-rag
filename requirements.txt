@@ -1,0 +1,14 @@
+# PDF text extraction
+PyMuPDF==1.26.5
+
+# Embeddings and vector search
+sentence-transformers==5.1.2
+faiss-cpu==1.13.0
+numpy==2.0.2
+
+# Keyword search
+rank-bm25==0.2.2
+
+# OCR (also needs the system program: brew install tesseract)
+pytesseract==0.3.13
+pillow==11.3.0
