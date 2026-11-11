@@ -5,7 +5,7 @@ A question-answering system for company financial reports (10-K, 10-Q, 8-K), bui
 It runs **fully locally**: the embedding model, the vector index and the LLM (Qwen3 4B via Ollama) all run on a laptop, so no document or question leaves the machine.
 
 <p align="center">
-  <img src="docs/demo.jpg" alt="Web demo: a question about 3M's 2018 capital expenditure, the answer with its page citation, the FinanceBench reference answer, and the pages the model read" width="650">
+  <img src="docs/demo.png" alt="Web demo: a question about 3M's 2018 capital expenditure, the answer with its page citation, the FinanceBench reference answer, and the pages the model read" width="650">
 </p>
 
 ```text
