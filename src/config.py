@@ -72,3 +72,21 @@ RRF_K = 60
 # how well the chunk answers it. Slower than FAISS, but more accurate,
 # so we only use it to re-order the top CANDIDATES chunks.
 RERANKER_MODEL = "BAAI/bge-reranker-base"
+
+
+# ==========================================
+# 6. ANSWER GENERATION (LLM)
+# ==========================================
+
+# Local model served by Ollama (free, nothing leaves this computer).
+LLM_MODEL = "qwen3:4b-instruct"
+
+# Ollama listens on this computer only.
+OLLAMA_URL = "http://localhost:11434/api/generate"
+
+# How many of the top pages the model reads before answering.
+CONTEXT_PAGES = 5
+
+# The model's reading window in tokens. 5 full pages are roughly
+# 5,000-8,000 tokens, so 16k leaves room for the question and answer.
+LLM_CONTEXT_TOKENS = 16384
