@@ -90,6 +90,9 @@ ollama pull qwen3:4b-instruct
 **Data** (not in the repo, ~670 MB of PDFs): clone [FinanceBench](https://github.com/patronus-ai/financebench), copy `pdfs/*.pdf` into `data/raw/` and `data/financebench_open_source.jsonl` into `data/processed/`.
 
 ```bash
+# Web demo: pick a report, ask a question, see the answer and the pages it used
+streamlit run app.py
+
 # Ask a question about one report
 python -m src.generation.answer --pdf data/raw/APPLE_2022_10K.pdf --question "..."
 

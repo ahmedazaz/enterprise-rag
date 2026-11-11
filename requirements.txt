@@ -12,3 +12,6 @@ rank-bm25==0.2.2
 # OCR (also needs the system program: brew install tesseract)
 pytesseract==0.3.13
 pillow==11.3.0
+
+# Web demo
+streamlit==1.50.0
