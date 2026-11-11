@@ -28,6 +28,10 @@ BASE_METHODS = ["FAISS", "BM25", "Hybrid_RRF", "FAISS+Statement"]
 
 RERANK_METHODS = ["FAISS+Rerank", "Hybrid+Rerank"]
 
+# The method with the best evaluation scores (see the experiments):
+# hit@1 0.400 and hit@10 0.753 on 150 FinanceBench questions.
+BEST_METHOD = "FAISS+Statement"
+
 
 def build_document_index(
     pdf_path: Path,
