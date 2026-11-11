@@ -63,6 +63,16 @@ def get_example_questions() -> dict:
     return examples
 
 
+def show_text(text: str):
+    """
+    Display text as Markdown, keeping dollar signs as dollar signs.
+
+    Streamlit reads text between two "$" as a math formula, so
+    "$ (1,577) $ (1,373)" would lose its "$" signs. Escaping fixes it.
+    """
+    st.markdown(text.replace("$", "\\$"))
+
+
 @st.cache_data
 def list_reports() -> list[str]:
     return sorted(pdf.stem for pdf in RAW_PDF_DIR.glob("*.pdf"))
@@ -147,13 +157,13 @@ if ask:
 
     # 3c. The answer
     st.subheader("Answer")
-    st.markdown(result["answer"])
+    show_text(result["answer"])
     st.caption(f"Answered in {seconds:.0f} s")
 
     # 3d. Compare with the FinanceBench answer, if this was an example
     if example and question == example["question"]:
         with st.expander("FinanceBench reference answer"):
-            st.markdown(example["answer"])
+            show_text(example["answer"])
 
     # 3e. The pages the LLM read, with their text
     st.subheader("Pages the model read")
