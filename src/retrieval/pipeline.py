@@ -16,10 +16,15 @@ from src.retrieval.bm25_search import build_bm25_index, search_bm25
 from src.retrieval.embeddings import embed_documents, embed_query
 from src.retrieval.hybrid_search import reciprocal_rank_fusion
 from src.retrieval.reranker import rerank
+from src.retrieval.statements import (
+    boost_statement_chunks,
+    detect_page_statement,
+    detect_question_statements
+)
 from src.retrieval.vector_store import build_faiss_index, search_faiss
 
 
-BASE_METHODS = ["FAISS", "BM25", "Hybrid_RRF"]
+BASE_METHODS = ["FAISS", "BM25", "Hybrid_RRF", "FAISS+Statement"]
 
 RERANK_METHODS = ["FAISS+Rerank", "Hybrid+Rerank"]
 
@@ -38,6 +43,8 @@ def build_document_index(
         "chunks" - text chunks with metadata
         "faiss"  - vector index over the chunks
         "bm25"   - keyword index over the chunks
+        "page_statements" - {page number: "cash_flow" / "balance_sheet" / "income"}
+                            for pages that show a financial statement
     """
 
     # 1. Extract text from every page
@@ -59,11 +66,22 @@ def build_document_index(
     # 4. Build the keyword index
     bm25_index = build_bm25_index(chunks)
 
+    # 5. Label pages that show a financial statement
+    page_statements = {}
+
+    for page in pages:
+
+        statement = detect_page_statement(page["text"])
+
+        if statement:
+            page_statements[page["metadata"]["page"]] = statement
+
     return {
         "pages": pages,
         "chunks": chunks,
         "faiss": faiss_index,
-        "bm25": bm25_index
+        "bm25": bm25_index,
+        "page_statements": page_statements
     }
 
 
@@ -106,16 +124,41 @@ def retrieve(
         [chunk_id for chunk_id, _ in bm25_results]
     ])[:candidates]
 
+    # 4. Statement boost: if the question names a financial statement
+    #    (e.g. "cash flow statement"), move that statement's pages to the top
+    wanted = detect_question_statements(question)
+
+    if wanted:
+
+        # Rank ALL chunks, so a statement page outside the top
+        # candidates can still be moved up
+        all_chunks_ranked = search_faiss(
+            embed_query(question, model),
+            document_index["faiss"],
+            len(chunks)
+        )
+
+        statement_results = boost_statement_chunks(
+            all_chunks_ranked,
+            chunks,
+            document_index["page_statements"],
+            wanted
+        )[:candidates]
+
+    else:
+        statement_results = faiss_results
+
     results = {
         "FAISS": faiss_results,
         "BM25": bm25_results,
-        "Hybrid_RRF": hybrid_results
+        "Hybrid_RRF": hybrid_results,
+        "FAISS+Statement": statement_results
     }
 
-    # 4. Optional: re-order the candidates with the cross-encoder
+    # 5. Optional: re-order the candidates with the cross-encoder
     if reranker is not None:
 
-        # 4a. Score every candidate chunk once
+        # 5a. Score every candidate chunk once
         #     (FAISS and Hybrid candidates mostly overlap)
         all_ids = list(dict.fromkeys(
             chunk_id
@@ -123,7 +166,7 @@ def retrieve(
         ))
         rerank_scores = dict(rerank(question, all_ids, chunks, reranker))
 
-        # 4b. Sort each method's candidates by the reranker score
+        # 5b. Sort each method's candidates by the reranker score
         for method, source in (("FAISS+Rerank", faiss_results),
                                ("Hybrid+Rerank", hybrid_results)):
 
