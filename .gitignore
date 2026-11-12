@@ -11,3 +11,6 @@ __pycache__/
 data/
 financebench/
 *.csv
+
+# Editor settings
+.vscode/
